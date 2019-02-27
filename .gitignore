@@ -1,0 +1,7 @@
+*.pdf
+bin/
+lib/
+pyvenv.cfg
+.ipynb_checkpoints/
+pip-selfcheck.json
+share/
