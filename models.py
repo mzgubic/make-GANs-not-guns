@@ -4,11 +4,12 @@ import tensorflow.contrib.layers as layers
 
 class Model:
 
-    def __init__(self, name, hps):
+    def __init__(self, name, **kwargs):
 
         # settings
         self.name = name
-        self._hps = hps
+        for kw in kwargs:
+            setattr(self, kw, kwargs[kw])
 
         # placeholders
         self.output = None
@@ -17,32 +18,53 @@ class Model:
 
 class GeneratorFullyConnected(Model):
 
-    def make_forward_pass(input_noise, depth, n_units, output_dim):
+    def make_forward_pass(self, input_noise):
 
         with tf.variable_scope(self.name):
 
             layer = input_noise
             
-            for _ in range(depth):
-                layer = layers.relu(layer, n_units)
+            for _ in range(self.depth):
+                layer = layers.relu(layer, self.n_units)
 
-            self.output = layers.linear(layer, output_dim)
+            self.output = layers.linear(layer, self.output_dim)
 
         self.tf_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
+
+    def make_loss(self, adv_loss):
+
+        self.loss = - adv_loss
+
+    def make_opt(self):
+
+        self.opt = tf.train.AdamOptimizer().minimize(self.loss, var_list=self.tf_vars)
 
 
 class AdversaryFullyConnected(Model):
 
-    def make_forward_pass(data, depth=3, n_units=10, n_classes=2):
+    def make_forward_pass(self, data):
 
         with tf.variable_scope(self.name):
 
             layer = data
 
-            for _ in range(depth):
-                layer = layers.relu(layer, n_units)
+            for _ in range(self.depth):
+                layer = layers.relu(layer, self.n_units)
 
-            self.logits = layers.linear(layer, n_classes)
+            self.logits = layers.linear(layer, self.n_classes)
 
         self.tf_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
+
+    def make_loss(self, labels):
+
+        self.loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=labels, logits=self.logits)
+        self.loss = tf.math.reduce_mean(self.loss)
+
+    def make_opt(self):
+
+        self.opt = tf.train.AdamOptimizer().minimize(self.loss, var_list=self.tf_vars)
+
+
+
+
 
