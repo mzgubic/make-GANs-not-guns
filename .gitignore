@@ -5,3 +5,5 @@ pyvenv.cfg
 .ipynb_checkpoints/
 pip-selfcheck.json
 share/
+__pycache__/
+tensorboard/
