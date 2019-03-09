@@ -2,33 +2,47 @@ import tensorflow as tf
 import tensorflow.contrib.layers as layers
 
 
-def Generator1D(input_noise, depth=3, n_units=20, name='MyGenerator1D'):
-    
-    with tf.variable_scope(name):
-        
-        layer = input_noise
-        
-        for _ in range(depth):
-            layer = layers.relu(layer, n_units)
+class Model:
+
+    def __init__(self, name, hps):
+
+        # settings
+        self.name = name
+        self._hps = hps
+
+        # placeholders
+        self.output = None
+        self.tf_vars = None
+
+
+class GeneratorFullyConnected(Model):
+
+    def make_forward_pass(input_noise, depth, n_units, output_dim):
+
+        with tf.variable_scope(self.name):
+
+            layer = input_noise
             
-        output = 5*layers.linear(layer, 1)
-    
-    tf_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
-    
-    return output, tf_vars
+            for _ in range(depth):
+                layer = layers.relu(layer, n_units)
+
+            self.output = layers.linear(layer, output_dim)
+
+        self.tf_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
 
 
-def Adversary(data, depth=3, n_units=10, name='MyAdversary'):
-    
-    with tf.variable_scope(name):
-        
-        layer = data
-        
-        for _ in range(depth):
-            layer = layers.relu(layer, n_units)
-        
-        logits = layers.linear(layer, 2)
-    
-    tf_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
-    
-    return logits, tf_vars
+class AdversaryFullyConnected(Model):
+
+    def make_forward_pass(data, depth=3, n_units=10, n_classes=2):
+
+        with tf.variable_scope(self.name):
+
+            layer = data
+
+            for _ in range(depth):
+                layer = layers.relu(layer, n_units)
+
+            self.logits = layers.linear(layer, n_classes)
+
+        self.tf_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
+
