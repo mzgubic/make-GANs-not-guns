@@ -29,7 +29,7 @@ class GeneratorFullyConnected(Model):
 
             self.output = layers.linear(layer, self.output_dim)
 
-        self.tf_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
+        self.tf_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
 
     def make_loss(self, adv_loss):
 
@@ -57,6 +57,7 @@ class AdversaryFullyConnected(Model):
 
     def make_loss(self, labels):
 
+        self.labels = labels
         self.loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=labels, logits=self.logits)
         self.loss = tf.math.reduce_mean(self.loss)
 
