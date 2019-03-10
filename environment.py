@@ -81,7 +81,8 @@ class TFEnvironment:
     def train_generator(self, batch_size):
         
         feed_dict = self._get_feed_dict(batch_size)
-        _ = self.sess.run(self.generator.opt, feed_dict=feed_dict)
+        _, summaries = self.sess.run([self.generator.opt, self.merged_summaries], feed_dict=feed_dict)
+        self.writer.add_summary(summaries)
 
     def train_adversary(self, batch_size):
         
